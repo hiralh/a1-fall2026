@@ -1,6 +1,8 @@
 package com.example.hhanda2_rapidrecall
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
@@ -10,6 +12,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -23,50 +27,46 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun RapidRecallApp(game: Game, onExit: () -> Unit, modifier: Modifier = Modifier) {
 
-    // https://www.geeksforgeeks.org/kotlin/kotlin-when-expression/
-    // Pages - landing, setup, ready, showing, answering, result, log, summary
+    // Pages - la8nding, setup, ready, showing, answering, result, log, summary
     var screen by remember { mutableStateOf("landing") }
     var shownDigit by remember { mutableStateOf("") }
     var userInput by remember { mutableStateOf("") }
 
-    // Ready, Set, Go! page -> then digits one at a time -> then answer page
-    LaunchedEffect(screen) {
-        if (screen == "ready") {
-            delay(1500.milliseconds)
-            screen = "showing"
-        } else if (screen == "showing") {
-            delay(500.milliseconds)
-            for (c in game.gen_seq) {
-                shownDigit = c.toString()
-                delay(800.milliseconds)
-                shownDigit = ""
-                delay(300.milliseconds)
-            }
-            screen = "answering"
-        }
-    }
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        val image1 = painterResource(R.drawable.lpbg)
+        // bg image
+        Image(
+            modifier = Modifier.fillMaxSize(),
+            painter = image1,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            alpha = 0.2f
+        )
 
-    Column(modifier = modifier.fillMaxSize().padding(20.dp)) {
-
-        when (screen) {
-
+        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
             // landing page
-            "landing" -> {
-                Column(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+            if (screen == "landing") {
+                Column(modifier = Modifier.weight(1f).fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Rapid Recall", fontSize = 40.sp, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.height(80.dp))
-                    Button(onClick = { screen = "setup" }, modifier = Modifier.width(250.dp).height(60.dp)){
+                    Button(
+                        onClick = { screen = "setup" },
+                        modifier = Modifier.width(250.dp).height(60.dp)
+                    ) {
                         Text("START GAME")
                     }
                     Spacer(Modifier.height(20.dp))
-                    Button(onClick = { screen = "log" }, modifier = Modifier.width(250.dp).height(60.dp)){
+                    Button(
+                        onClick = { screen = "log" },
+                        modifier = Modifier.width(250.dp).height(60.dp)
+                    ) {
                         Text("ATTEMPT LOG")
                     }
                     Spacer(Modifier.height(20.dp))
-                    Button(onClick = { screen = "summary" }, modifier = Modifier.width(250.dp).height(60.dp)){
+                    Button(
+                        onClick = { screen = "summary" },
+                        modifier = Modifier.width(250.dp).height(60.dp)
+                    ) {
                         Text("ATTEMPT SUMMARY")
                     }
                 }
@@ -74,7 +74,7 @@ fun RapidRecallApp(game: Game, onExit: () -> Unit, modifier: Modifier = Modifier
             }
 
             // choosing sequence length page
-            "setup" -> {
+            if (screen == "setup") {
                 Column(
                     modifier = Modifier.weight(1f).fillMaxWidth(),
                     verticalArrangement = Arrangement.Center,
@@ -103,7 +103,7 @@ fun RapidRecallApp(game: Game, onExit: () -> Unit, modifier: Modifier = Modifier
             }
 
             // ready, set, go! page
-            "ready" -> {
+            if (screen == "ready") {
                 Column(
                     modifier = Modifier.weight(1f).fillMaxWidth(),
                     verticalArrangement = Arrangement.Center,
@@ -113,8 +113,26 @@ fun RapidRecallApp(game: Game, onExit: () -> Unit, modifier: Modifier = Modifier
                 }
             }
 
+            // delays between pages/actions
+            // to understand how I can show one digit at a time on one page with delayes in between, I used Gemini AI with the prompt "How do I show one character on one page at a time with delays in between. In Kotlin". https://gemini.google.com/app/e50c974b87e76080?hl=en-CA
+            LaunchedEffect(screen) {
+                if (screen == "ready") {
+                    delay(1500.milliseconds)
+                    screen = "showing"
+                } else if (screen == "showing") {
+                    delay(500.milliseconds)
+                    for (i in game.gen_seq) {
+                        shownDigit = i.toString()
+                        delay(800.milliseconds)
+                        shownDigit = ""
+                        delay(300.milliseconds)
+                    }
+                    screen = "answering"
+                }
+            }
+
             // showing digits one at a time
-            "showing" -> {
+            if (screen == "showing") {
                 Column(
                     modifier = Modifier.weight(1f).fillMaxWidth(),
                     verticalArrangement = Arrangement.Center,
@@ -125,7 +143,7 @@ fun RapidRecallApp(game: Game, onExit: () -> Unit, modifier: Modifier = Modifier
             }
 
             // user answer page
-            "answering" -> {
+            if (screen == "answering") {
                 Column(
                     modifier = Modifier.weight(1f).fillMaxWidth(),
                     verticalArrangement = Arrangement.Center,
@@ -149,7 +167,7 @@ fun RapidRecallApp(game: Game, onExit: () -> Unit, modifier: Modifier = Modifier
                         Button(onClick = {
                             game.enterTry(userInput)
                             screen = "result"
-                        }, modifier = Modifier.width(250.dp).height(60.dp)){
+                        }, modifier = Modifier.width(250.dp).height(60.dp)) {
                             Text("ENTER")
                         }
                     }
@@ -157,7 +175,7 @@ fun RapidRecallApp(game: Game, onExit: () -> Unit, modifier: Modifier = Modifier
             }
 
             // result and feedback page
-            "result" -> {
+            if (screen == "result") {
                 val last = game.attempts.lastOrNull()
                 Column(
                     modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -172,11 +190,17 @@ fun RapidRecallApp(game: Game, onExit: () -> Unit, modifier: Modifier = Modifier
                     }
                     Spacer(Modifier.height(40.dp))
                     Row {
-                        Button(onClick = { screen = "landing" },modifier = Modifier.width(250.dp).height(60.dp)){
+                        Button(
+                            onClick = { screen = "landing" },
+                            modifier = Modifier.width(150.dp).height(60.dp)
+                        ) {
                             Text("HOME")
                         }
                         Spacer(Modifier.width(24.dp))
-                        Button(onClick = { screen = "setup" }, modifier = Modifier.width(250.dp).height(60.dp)){
+                        Button(
+                            onClick = { screen = "setup" },
+                            modifier = Modifier.width(150.dp).height(60.dp)
+                        ) {
                             Text("PLAY AGAIN")
                         }
                     }
@@ -184,43 +208,37 @@ fun RapidRecallApp(game: Game, onExit: () -> Unit, modifier: Modifier = Modifier
             }
 
             // attempt log page
-            "log" -> {
+            if (screen == "log") {
                 val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-
-                // BACK at the top right, above the column titles
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    Button(onClick = { screen = "landing" }) { Text("BACK") }
-                }
-                Spacer(Modifier.height(12.dp))
-
                 // Column titles
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Text("No.", Modifier.weight(0.6f), fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                    Text("Length", Modifier.weight(1f), fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                    Text("Sequence", Modifier.weight(1.6f), fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                    Text("Guess", Modifier.weight(1.6f), fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                    Text("Result", Modifier.weight(1.3f), fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                    Text("Timestamp", Modifier.weight(2.2f), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Row(modifier = Modifier.fillMaxWidth().padding(start = 5.dp, top = 8.dp, end = 5.dp, bottom = 8.dp)){
+                    Text("No.", Modifier.weight(0.6f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Text("Length", Modifier.weight(1f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Text("Sequence", Modifier.weight(1.6f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Text("Guess", Modifier.weight(1.6f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Text("Result", Modifier.weight(1.3f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Text("Timestamp", Modifier.weight(2.2f), textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                 }
-                Spacer(Modifier.height(8.dp))
-
+                Spacer(Modifier.height(4.dp))
                 // Scrollable list of attempts
-                LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth().padding(15.dp)){
+                    // https://www.geeksforgeeks.org/kotlin/lazy-composables-in-android-jetpack-compose-columns-rows-grids/
                     itemsIndexed(game.attempts) { index, a ->
                         Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-                            Text("${index + 1}", Modifier.weight(0.6f), fontSize = 12.sp)
-                            Text("${a.seq_len}", Modifier.weight(1f), fontSize = 12.sp)
-                            Text(a.gen_seq, Modifier.weight(1.6f), fontSize = 12.sp)
-                            Text(a.input, Modifier.weight(1.6f), fontSize = 12.sp)
-                            Text(a.result, Modifier.weight(1.3f), fontSize = 12.sp)
-                            Text(format.format(a.timestamp), Modifier.weight(2.2f), fontSize = 12.sp)
+                            Text("${index + 1}", Modifier.weight(0.6f), fontSize = 15.sp)
+                            Text("${a.seq_len}", Modifier.weight(1f), fontSize = 15.sp)
+                            Text(a.gen_seq, Modifier.weight(1.6f), fontSize = 15.sp)
+                            Text(a.input, Modifier.weight(1.6f), fontSize = 15.sp)
+                            Text(a.result, Modifier.weight(1.3f), fontSize = 15.sp)
+                            Text(format.format(a.timestamp), Modifier.weight(1.6f), fontSize = 13.sp)
                         }
                     }
                 }
+                BottomRightButton("BACK") { screen = "landing" }
             }
 
             // attempt summary page
-            "summary" -> {
+            if (screen == "summary") {
                 val summary = game.summarize()
                 Column(
                     modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -228,11 +246,23 @@ fun RapidRecallApp(game: Game, onExit: () -> Unit, modifier: Modifier = Modifier
                 ) {
                     Text("SUMMARY", fontSize = 40.sp, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.height(100.dp))
-                    Text("Total Attempts: ${summary.total_attempts}", fontSize = 22.sp, textAlign = TextAlign.Center)
+                    Text(
+                        "Total Attempts: ${summary.total_attempts}",
+                        fontSize = 22.sp,
+                        textAlign = TextAlign.Center
+                    )
                     Spacer(Modifier.height(16.dp))
-                    Text("Total Correct Attempts: ${summary.total_correct}", fontSize = 22.sp, textAlign = TextAlign.Center)
+                    Text(
+                        "Total Correct Attempts: ${summary.total_correct}",
+                        fontSize = 22.sp,
+                        textAlign = TextAlign.Center
+                    )
                     Spacer(Modifier.height(16.dp))
-                    Text("Accuracy: ${String.format(Locale.US, "%.1f", summary.accuracy)}%", fontSize = 22.sp, textAlign = TextAlign.Center)
+                    Text(
+                        "Accuracy: ${String.format(Locale.US, "%.1f", summary.accuracy)}%",
+                        fontSize = 22.sp,
+                        textAlign = TextAlign.Center
+                    )
                 }
                 BottomRightButton("BACK") { screen = "landing" }
             }
@@ -242,7 +272,7 @@ fun RapidRecallApp(game: Game, onExit: () -> Unit, modifier: Modifier = Modifier
 
 @Composable
 fun BottomRightButton(label: String, onClick: () -> Unit) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+    Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.End) {
         Button(onClick = onClick, modifier = Modifier.width(100.dp).height(60.dp)) { Text(label) }
     }
 }

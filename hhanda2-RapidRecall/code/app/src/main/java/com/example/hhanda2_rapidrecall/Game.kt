@@ -52,7 +52,6 @@ class Game {
     fun summarize(): Summary{
         // Creates summary of attempts and then returns a Summary object
         val total_attempts = _attempts.size
-        //val total_correct = _attempts.count {it.result == "Correct"}
         var total_correct = 0
         for (attempt in _attempts) {
             if (attempt.result == "Correct") {
